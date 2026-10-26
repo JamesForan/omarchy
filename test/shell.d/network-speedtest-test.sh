@@ -26,3 +26,8 @@ for args in sideways "down extra"; do
   (( status == 2 )) && [[ $out == Usage:* ]] || fail "rejects '$args' without starting a test" "status $status: $out"
   pass "rejects '$args' without starting a test"
 done
+
+status=0
+out=$(OMARCHY_SPEEDTEST_BINARY=$tmp/missing "$launcher" down 2>&1) || status=$?
+(( status == 1 )) && [[ $out == *omarchy-speedtest* ]] || fail "names the package when the client is missing" "status $status: $out"
+pass "names the package when the client is missing"
