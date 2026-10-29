@@ -160,3 +160,20 @@ result=$(HOME="$TMPDIR" XDG_CACHE_HOME="$TMPDIR/cache-retry" \
   omarchy-bar-text-color top 20 '#ffffff' '#101010' --background "$light_top" --screen 100x100)
 [[ $result == "#101010" ]] || fail "failed wallpaper sample is not remembered" "expected #101010 on retry, got $result"
 pass "failed wallpaper sample is not remembered"
+
+# Remembering is best-effort: a cache directory that cannot be written or swept
+# must not cost the caller the colour that was just sampled.
+locked_cache="$TMPDIR/locked-cache/omarchy/bar-text-color"
+mkdir -p "$locked_cache"
+chmod 000 "$locked_cache"
+result=$(HOME="$TMPDIR" XDG_CACHE_HOME="$TMPDIR/locked-cache" \
+  omarchy-bar-text-color top 20 '#ffffff' '#101010' --background "$light_top" --screen 100x100)
+chmod 755 "$locked_cache"
+[[ $result == "#101010" ]] || fail "unwritable cache still answers with the sampled colour" "expected #101010, got $result"
+pass "unwritable cache still answers with the sampled colour"
+
+: >"$TMPDIR/cache-is-a-file"
+result=$(HOME="$TMPDIR" XDG_CACHE_HOME="$TMPDIR/cache-is-a-file" \
+  omarchy-bar-text-color top 20 '#ffffff' '#101010' --background "$light_top" --screen 100x100)
+[[ $result == "#101010" ]] || fail "uncreatable cache still answers with the sampled colour" "expected #101010, got $result"
+pass "uncreatable cache still answers with the sampled colour"

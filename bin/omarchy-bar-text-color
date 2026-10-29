@@ -68,10 +68,10 @@ remember() {
   mkdir -p "$cache_dir" 2>/dev/null || return 0
   # Old wallpapers and themes leave entries behind; they are tiny, so sweep
   # rarely rather than on every call.
-  find "$cache_dir" -maxdepth 1 -type f -mtime +30 -delete 2>/dev/null
+  find "$cache_dir" -maxdepth 1 -type f -mtime +30 -delete 2>/dev/null || true
   tmp=$(mktemp "$cache_dir/.remember.XXXXXX" 2>/dev/null) || return 0
-  if printf '%s\n' "$1" >"$tmp"; then
-    mv -f "$tmp" "$cache_file"
+  if printf '%s\n' "$1" >"$tmp" 2>/dev/null; then
+    mv -f "$tmp" "$cache_file" 2>/dev/null || rm -f "$tmp"
   else
     rm -f "$tmp"
   fi
@@ -192,5 +192,7 @@ else
   color=$text_color
 fi
 
-remember "$color"
+# Answer first: remembering is best-effort and must never cost the caller the
+# colour it already has.
 printf '%s\n' "$color"
+remember "$color"
